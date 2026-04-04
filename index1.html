@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML, CSS & Laravel Bilgi Kartı</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #00d4aa;
+    --accent2: #ff6b35;
+    --accent3: #7c6af7;
+    --text: #e8edf5;
+    --text-dim: #6b7a99;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
+
+  .stats-bar {
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-chip .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+  .tab {
+    padding: 10px 22px;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: all .2s;
+    background: transparent;
+    color: var(--text-dim);
+  }
+  .tab.active {
+    background: linear-gradient(135deg, var(--accent3), var(--accent));
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(124,106,247,.35);
+  }
+  .tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ===== OYUN MODU ===== */
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+  }
+  .progress-wrap {
+    flex: 1; min-width: 200px;
+  }
+  .progress-info {
+    display: flex; justify-content: space-between;
+    font-size: 12px; font-family: 'Space Mono', monospace;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 4px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    border-radius: 4px;
+    transition: width .4s ease;
+  }
+
+  .score-display {
+    display: flex; gap: 12px;
+  }
+  .score-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .score-badge.correct { border-color: var(--green); color: var(--green); }
+  .score-badge.wrong { border-color: var(--red); color: var(--red); }
+
+  /* KART */
+  .card-scene {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto 28px;
+    height: 280px;
+  }
+  .card {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,0,.2,1);
+    cursor: pointer;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px;
+    text-align: center;
+  }
+  .card-front {
+    background: var(--surface);
+    background-image: radial-gradient(ellipse at 20% 20%, rgba(124,106,247,.12) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 80%, rgba(0,212,170,.08) 0%, transparent 60%);
+  }
+  .card-back {
+    background: var(--surface2);
+    background-image: radial-gradient(ellipse at 80% 20%, rgba(0,212,170,.15) 0%, transparent 60%),
+                      radial-gradient(ellipse at 20% 80%, rgba(255,107,53,.08) 0%, transparent 60%);
+    transform: rotateY(180deg);
+  }
+
+  .card-label {
+    font-size: 10px; font-family: 'Space Mono', monospace;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 16px;
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 4px 12px;
+  }
+  .card-back .card-label { color: var(--accent); border-color: rgba(0,212,170,.3); }
+
+  .card-text {
+    font-size: 18px; font-weight: 700; line-height: 1.5;
+    color: var(--text);
+  }
+  .card-back .card-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 17px;
+    color: var(--accent);
+  }
+
+  .card-hint {
+    margin-top: 16px;
+    font-size: 11px; color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+  .card-num {
+    position: absolute; top: 16px; right: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--text-dim);
+  }
+
+  /* Kategori etiketi kart üzerinde */
+  .card-cat {
+    position: absolute; top: 16px; left: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* OYUN BUTONLARI */
+  .game-actions {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .btn {
+    padding: 12px 28px; border-radius: 12px;
+    border: 1px solid var(--border);
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-ghost { background: var(--surface); color: var(--text); }
+  .btn-ghost:hover { background: var(--surface2); border-color: var(--text-dim); }
+  .btn-correct { background: rgba(34,197,94,.12); border-color: var(--green); color: var(--green); }
+  .btn-correct:hover { background: rgba(34,197,94,.22); }
+  .btn-wrong { background: rgba(239,68,68,.12); border-color: var(--red); color: var(--red); }
+  .btn-wrong:hover { background: rgba(239,68,68,.22); }
+  .btn-accent { background: linear-gradient(135deg, var(--accent3), var(--accent)); border: none; color: #fff; }
+  .btn-accent:hover { opacity: .85; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* SHUFFLE / NAV */
+  .nav-row {
+    display: flex; justify-content: center; align-items: center; gap: 16px;
+  }
+  .nav-btn {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .nav-btn:hover { background: var(--surface2); border-color: var(--text-dim); }
+  .nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+  /* KATEGORİ FİLTRE */
+  .filter-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .cat-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .cat-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .cat-btn.active { background: var(--surface2); color: var(--text); border-color: var(--accent3); }
+  .cat-btn[data-cat="HTML"].active  { border-color: #ff6b35; color: #ff6b35; }
+  .cat-btn[data-cat="CSS"].active   { border-color: #7c6af7; color: #7c6af7; }
+  .cat-btn[data-cat="Laravel"].active { border-color: #00d4aa; color: #00d4aa; }
+
+  /* SONUÇ EKRANI */
+  .result-screen {
+    display: none;
+    text-align: center; padding: 48px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    max-width: 520px; margin: 0 auto;
+  }
+  .result-screen.show { display: block; }
+  .result-emoji { font-size: 64px; margin-bottom: 16px; }
+  .result-title { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .result-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 48px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent3), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin: 16px 0;
+  }
+  .result-detail {
+    color: var(--text-dim); font-size: 14px; margin-bottom: 28px;
+  }
+
+  /* ===== TÜM SORULAR MODU ===== */
+  .search-row {
+    display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1; min-width: 200px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    font-family: 'Syne', sans-serif; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color .2s;
+  }
+  .search-input:focus { border-color: var(--accent3); }
+  .search-input::placeholder { color: var(--text-dim); }
+
+  .q-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+  }
+  .q-table thead th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--text-dim); font-family: 'Space Mono', monospace;
+    text-align: left;
+  }
+  .q-table thead th:first-child { border-radius: 8px 0 0 8px; }
+  .q-table thead th:last-child { border-radius: 0 8px 8px 0; }
+  .q-row {
+    background: var(--surface);
+    transition: background .15s;
+    cursor: default;
+  }
+  .q-row:hover { background: var(--surface2); }
+  .q-row td {
+    padding: 14px 16px;
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .q-row td:first-child {
+    border-left: 1px solid var(--border);
+    border-radius: 10px 0 0 10px;
+    width: 36px; text-align: center;
+    font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-dim);
+  }
+  .q-row td.cat-cell {
+    width: 80px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 5px;
+    border: 1px solid;
+  }
+  .cat-html  { color: #ff6b35; border-color: rgba(255,107,53,.4); background: rgba(255,107,53,.08); }
+  .cat-css   { color: #7c6af7; border-color: rgba(124,106,247,.4); background: rgba(124,106,247,.08); }
+  .cat-laravel { color: #00d4aa; border-color: rgba(0,212,170,.4); background: rgba(0,212,170,.08); }
+
+  .q-row td:last-child {
+    border-right: 1px solid var(--border);
+    border-radius: 0 10px 10px 0;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    min-width: 140px;
+  }
+  .q-question { line-height: 1.5; }
+  .q-count {
+    font-size: 12px; color: var(--text-dim); font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  /* flash anim */
+  @keyframes flashGreen {
+    0%{background: rgba(34,197,94,.25)} 100%{background: var(--surface)}
+  }
+  @keyframes flashRed {
+    0%{background: rgba(239,68,68,.25)} 100%{background: var(--surface)}
+  }
+  .flash-correct { animation: flashGreen .6s ease-out; }
+  .flash-wrong { animation: flashRed .6s ease-out; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .card-text { font-size: 15px; }
+    .card-back .card-text { font-size: 14px; }
+    .card-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🌐</div>
+      <div>
+        <div class="logo-text">HTML · CSS · Laravel</div>
+        <div class="logo-sub">Bilgi Kartı Oyunu</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-chip"><span class="dot" style="background:#ff6b35"></span>HTML</div>
+      <div class="stat-chip"><span class="dot" style="background:#7c6af7"></span>CSS</div>
+      <div class="stat-chip"><span class="dot" style="background:#00d4aa"></span>Laravel/Blade</div>
+      <div class="stat-chip"><span class="dot" style="background:var(--text-dim)"></span><span id="totalCount">90</span> Kart</div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('game', this)">🎮 Oyun Modu</button>
+    <button class="tab" onclick="switchTab('all', this)">📋 Tüm Sorular</button>
+  </div>
+
+  <!-- ===== OYUN MODU ===== -->
+  <div id="tab-game" class="section active">
+
+    <!-- Sonuç ekranı -->
+    <div class="result-screen" id="resultScreen">
+      <div class="result-emoji" id="resultEmoji">🎉</div>
+      <div class="result-title" id="resultTitle">Tebrikler!</div>
+      <div class="result-score" id="resultScore">0/0</div>
+      <div class="result-detail" id="resultDetail"></div>
+      <button class="btn btn-accent" onclick="restartGame()">🔄 Yeniden Başlat</button>
+    </div>
+
+    <!-- Oyun alanı -->
+    <div id="gameArea">
+      <div class="game-header">
+        <div class="progress-wrap">
+          <div class="progress-info">
+            <span id="progressText">Soru 1 / 90</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+        <div class="score-display">
+          <div class="score-badge correct">✓ <span id="correctCount">0</span></div>
+          <div class="score-badge wrong">✗ <span id="wrongCount">0</span></div>
+        </div>
+      </div>
+
+      <!-- Kategori filtre -->
+      <div class="filter-row">
+        <button class="cat-btn active" data-cat="Tümü" onclick="setCatFilter('Tümü', this)">Tümü</button>
+        <button class="cat-btn" data-cat="HTML" onclick="setCatFilter('HTML', this)">🏷 HTML</button>
+        <button class="cat-btn" data-cat="CSS" onclick="setCatFilter('CSS', this)">🎨 CSS</button>
+        <button class="cat-btn" data-cat="Laravel" onclick="setCatFilter('Laravel', this)">⚙️ Laravel / Blade</button>
+      </div>
+
+      <div class="card-scene">
+        <div class="card" id="flashcard" onclick="flipCard()">
+          <div class="card-face card-front">
+            <div class="card-cat" id="cardCat">HTML</div>
+            <div class="card-num" id="cardNum">1/90</div>
+            <div class="card-label">❓ SORU</div>
+            <div class="card-text" id="questionText">Yükleniyor...</div>
+            <div class="card-hint">— Cevabı görmek için karta tıkla —</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-cat" id="cardCat2">HTML</div>
+            <div class="card-num" id="cardNum2">1/90</div>
+            <div class="card-label">💡 CEVAP</div>
+            <div class="card-text" id="answerText">...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-actions" id="actionButtons">
+        <button class="btn btn-ghost" onclick="skipCard()">⏭ Atla</button>
+        <button class="btn btn-correct" id="correctBtn" onclick="markCorrect()" disabled>✓ Bildim</button>
+        <button class="btn btn-wrong" id="wrongBtn" onclick="markWrong()" disabled>✗ Bilmedim</button>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled title="Önceki">‹</button>
+        <button class="btn btn-ghost" onclick="shuffleCards()" style="font-size:13px">🔀 Karıştır</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextCard()" title="Sonraki">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TÜM SORULAR ===== -->
+  <div id="tab-all" class="section">
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍  Soru veya cevap ara..." oninput="filterTable()">
+    </div>
+    <div class="q-count" id="qCount">90 soru listeleniyor</div>
+    <table class="q-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Kategori</th>
+          <th>Soru</th>
+          <th>Cevap</th>
+        </tr>
+      </thead>
+      <tbody id="qTableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const CARDS = [{"q":"HTML'de bir bağlantının (link) yeni bir sekmede açılmasını sağlayan özellik ve değer kombinasyonu nedir?","a":"target=\"_blank\"","cat":"HTML"},{"q":"Bir HTML görselinin (img) yüklenemediği durumlarda gösterilecek alternatif metni belirleyen özellik hangisidir?","a":"alt özelliği.","cat":"HTML"},{"q":"HTML formlarında verilerin URL üzerinden gönderilmesini sağlayan 'method' değeri hangisidir?","a":"GET","cat":"HTML"},{"q":"HTML'de sıralı (numaralı) liste oluşturmak için kullanılan ana etiket hangisidir?","a":"<ol> etiketi.","cat":"HTML"},{"q":"Bir HTML tablosunda satır başlığı (header cell) tanımlamak için kullanılan etiket hangisidir?","a":"<th> etiketi.","cat":"HTML"},{"q":"HTML form elemanlarını ve etiketlerini (label) birbirine bağlamak için kullanılan 'label' özelliği hangisidir?","a":"for özelliği.","cat":"HTML"},{"q":"Modern HTML'de bir sayfanın ana içeriğini tanımlamak için kullanılan anlamsal (semantic) etiket hangisidir?","a":"<main> etiketi.","cat":"HTML"},{"q":"CSS'de 'padding' ve 'margin' arasındaki temel fark nedir?","a":"Padding eleman içi boşluğu, margin ise eleman dışı boşluğu ifade eder.","cat":"CSS"},{"q":"CSS kutu modelinde (Box Model) bir elemanın toplam genişliğine kenarlık ve iç boşluğu dahil eden özellik hangisidir?","a":"box-sizing: border-box;","cat":"CSS"},{"q":"CSS'de bir elemanı normal akıştan çıkarıp en yakın konumlandırılmış (positioned) ata elemana göre yerleştiren pozisyon türü hangisidir?","a":"absolute","cat":"CSS"},{"q":"CSS seçicilerinde (selectors) '#' sembolü hangi tür seçiciyi temsil eder?","a":"ID seçicisi.","cat":"CSS"},{"q":"Bir elemanın görünürlüğünü tamamen kaldıran ve sayfada yer kaplamamasını sağlayan CSS kuralı nedir?","a":"display: none;","cat":"CSS"},{"q":"CSS'de 'z-index' özelliğinin çalışabilmesi için elemanın hangi özelliğe sahip olması gerekir?","a":"static dışında bir position değerine sahip olması gerekir.","cat":"CSS"},{"q":"Flexbox düzeninde ana eksen (main axis) üzerindeki elemanları hizalamak için kullanılan özellik hangisidir?","a":"justify-content","cat":"CSS"},{"q":"CSS'de farklı ekran boyutlarına göre farklı stil kuralları uygulamayı sağlayan yapıya ne ad verilir?","a":"Media Queries (@media)","cat":"CSS"},{"q":"CSS özgüllük (specificity) hiyerarşisinde; 'class' seçicisi mi yoksa 'id' seçicisi mi daha yüksek önceliğe sahiptir?","a":"ID seçicisi.","cat":"CSS"},{"q":"Laravel Blade yapısında, bir ana şablon (layout) içerisinde alt sayfaların içerik yerleştirebileceği alanları tanımlayan direktif hangisidir?","a":"@yield","cat":"Laravel"},{"q":"Blade'de bir alt sayfanın hangi ana şablonu (layout) kullanacağını belirten direktif hangisidir?","a":"@extends","cat":"Laravel"},{"q":"Laravel Blade şablonlarında Cross-Site Request Forgery saldırılarını önlemek için form içine eklenen zorunlu direktif hangisidir?","a":"@csrf","cat":"Laravel"},{"q":"Blade'de bir dizinin boş olması durumunda alternatif bir metin göstermeyi kolaylaştıran döngü yapısı hangisidir?","a":"@forelse","cat":"Laravel"},{"q":"Blade'de sadece oturum açmış kullanıcılara özel içerik göstermek için kullanılan kontrol direktifi hangisidir?","a":"@auth","cat":"Laravel"},{"q":"Blade'de ana şablondaki bir `@stack` alanına içerik göndermek için hangi direktif çifti kullanılır?","a":"@push ve @endpush","cat":"Laravel"},{"q":"Blade'de verilerin HTML escape işlemine tabi tutulmadan (saf HTML olarak) yazdırılması için kullanılan sözdizimi nedir?","a":"{!! $degisken !!}","cat":"Laravel"},{"q":"Laravel'de bir veritabanı tablosunu temsil eden ve Eloquent ORM kullanan PHP sınıfına ne ad verilir?","a":"Model","cat":"Laravel"},{"q":"Laravel MVC mimarisinde, kullanıcı isteğini alan ve iş mantığını yürüterek yanıt dönen katman hangisidir?","a":"Controller","cat":"Laravel"},{"q":"Laravel'de yeni bir 'Page' modeli ile birlikte migrasyon dosyasını aynı anda oluşturan Artisan komutu nedir?","a":"php artisan make:model Page -m","cat":"Laravel"},{"q":"Veritabanına test verisi veya başlangıç verisi eklemek için kullanılan Laravel sınıflarına ne ad verilir?","a":"Seeder","cat":"Laravel"},{"q":"Laravel'de 'routes/web.php' dosyasında tanımlanan bir rotanın 'id' parametresi alması nasıl ifade edilir?","a":"/sayfa/{id}","cat":"Laravel"},{"q":"Laravel projelerinde veritabanı bağlantı bilgileri ve uygulama anahtarı gibi hassas ayarların tutulduğu dosya hangisidir?","a":".env","cat":"Laravel"},{"q":"Blade'de bir değişkenin tanımlı olup olmadığını kontrol eden direktif hangisidir?","a":"@isset","cat":"Laravel"},{"q":"Blade'de bir içeriğin sadece bir kez render edilmesini (örneğin bir döngü içinde aynı scripti tekrar eklememek için) sağlayan direktif hangisidir?","a":"@once","cat":"Laravel"},{"q":"Laravel'de tüm veritabanı tablolarını silip migrasyonları baştan çalıştıran Artisan komutu hangisidir?","a":"php artisan migrate:fresh","cat":"Laravel"},{"q":"Blade'de `@` sembolü ile başlayan ifadelerin Blade tarafından parse edilmesini önleyen ve olduğu gibi bırakan direktif hangisidir?","a":"@verbatim","cat":"Laravel"},{"q":"Laravel Controller yapısında, 'kayıt düzenleme formunu' kullanıcıya göstermek için kullanılan standart metot ismi nedir?","a":"edit","cat":"Laravel"},{"q":"CSS'de 'font-size' birimi olarak kullanılan 'em' ve 'rem' arasındaki temel fark nedir?","a":"em üst elemanın font boyutunu, rem ise kök (root) elemanın font boyutunu temel alır.","cat":"CSS"},{"q":"HTML'de bir sayfada sadece bir kez kullanılması gereken benzersiz tanımlayıcı özellik hangisidir?","a":"id özelliği.","cat":"HTML"},{"q":"Blade'de bir input hatası olup olmadığını kontrol etmek ve hata mesajını yazdırmak için kullanılan direktif hangisidir?","a":"@error","cat":"Laravel"},{"q":"Laravel'de HTTP isteklerini Controller'a ulaşmadan önce filtreleyen (örneğin yetki kontrolü yapan) yapıya ne ad verilir?","a":"Middleware","cat":"Laravel"},{"q":"Laravel projesini yerel bir sunucuda başlatmak için kullanılan Artisan komutu nedir?","a":"php artisan serve","cat":"Laravel"},{"q":"Blade'de bir PHP kod bloğu açmak için kullanılan direktif hangisidir?","a":"@php","cat":"Laravel"},{"q":"CSS'de elemanların opaklığını (saydamlığını) ayarlamak için kullanılan özellik hangisidir?","a":"opacity","cat":"CSS"},{"q":"HTML'de meta verilerin, başlığın ve stil dosyalarının tanımlandığı ana bölüm hangisidir?","a":"<head> bölümü.","cat":"HTML"},{"q":"Laravel'de bir Resource Controller oluştururken tüm standart metotların otomatik gelmesi için komuta eklenen parametre nedir?","a":"--resource","cat":"Laravel"},{"q":"Blade şablonlarında 'else if' yapısı hangi direktif ile kurulur?","a":"@elseif","cat":"Laravel"},{"q":"Laravel'de uygulama anahtarını (APP_KEY) yeniden oluşturmak için hangi komut kullanılır?","a":"php artisan key:generate","cat":"Laravel"},{"q":"CSS Grid sisteminde satırlar veya sütunlar arasındaki boşluğu belirleyen özellik hangisidir?","a":"gap","cat":"CSS"},{"q":"HTML'de `<br>` etiketinin görevi nedir?","a":"Satır sonu (line break) oluşturur.","cat":"HTML"},{"q":"Blade'de çoklu koşul kontrolü yapmak için kullanılan yapı hangisidir?","a":"@switch, @case, @default, @break","cat":"Laravel"},{"q":"Laravel'de bir Controller içinden bir View'a veri gönderirken kullanılan PHP fonksiyonu hangisidir?","a":"view() fonksiyonu (ikinci parametre olarak dizi alır).","cat":"Laravel"},{"q":"Blade'de bir dosyanın içeriğini mevcut dosyaya dahil etmek (import etmek) için kullanılan direktif hangisidir?","a":"@include","cat":"Laravel"},{"q":"CSS'de 'position: fixed' özelliğinin 'absolute'tan farkı nedir?","a":"Fixed elemanı tarayıcı penceresine (viewport) göre sabitler, kaydırmadan etkilenmez.","cat":"CSS"},{"q":"Laravel'de en son yapılan migrasyon işlemini geri almak için kullanılan komut nedir?","a":"php artisan migrate:rollback","cat":"Laravel"},{"q":"HTML formlarında dosya yükleme işlemi yapılabilmesi için 'form' etiketine eklenmesi gereken özellik nedir?","a":"enctype=\"multipart/form-data\"","cat":"HTML"},{"q":"Blade'de bir değişkenin boş (empty) olup olmadığını kontrol eden direktif hangisidir?","a":"@empty","cat":"Laravel"},{"q":"CSS'de bir elemana gölge efekti vermek için kullanılan özellik hangisidir?","a":"box-shadow","cat":"CSS"},{"q":"Laravel projesinde rotaların (routes) listesini terminalde görmek için hangi komut çalıştırılır?","a":"php artisan route:list","cat":"Laravel"},{"q":"Blade'de bir sayfanın başlığını dinamik olarak ana şablona göndermek için `@section` ile kullanılan metot hangisidir?","a":"@section('title', 'Sayfa Başlığı')","cat":"Laravel"},{"q":"Laravel'de bir modelin hangi veritabanı tablosuna karşılık geleceğini otomatik olarak belirleyen kural nedir?","a":"Model isminin çoğul (plural) ve küçük harf hali (örn: Page -> pages).","cat":"Laravel"},{"q":"HTML'de bir form inputunu 'sadece okunabilir' yapmak için hangi özellik eklenir?","a":"readonly","cat":"HTML"},{"q":"CSS'de metni tamamen büyük harfe dönüştüren özellik ve değer hangisidir?","a":"text-transform: uppercase;","cat":"CSS"},{"q":"Blade'de `@auth` direktifinin tersi olan (misafir kullanıcıları kontrol eden) direktif hangisidir?","a":"@guest","cat":"Laravel"},{"q":"Laravel'de yeni bir Seeder sınıfı oluşturmak için kullanılan Artisan komutu nedir?","a":"php artisan make:seeder SınıfAdı","cat":"Laravel"},{"q":"CSS'de 'display: block' ve 'display: inline-block' arasındaki fark nedir?","a":"Inline-block yan yana dizilmeye izin verirken genişlik ve yükseklik değerlerini kabul eder.","cat":"CSS"},{"q":"Laravel Blade dosyalarının uzantısı tam olarak ne olmalıdır?","a":".blade.php","cat":"Laravel"},{"q":"HTML'de CSS stil dosyasını sayfaya dahil etmek için kullanılan etiket hangisidir?","a":"<link> etiketi.","cat":"HTML"},{"q":"CSS'de bir elemanın üzerine gelindiğinde (hover) stili değiştirmek için kullanılan yapıya ne ad verilir?","a":"Pseudo-class (Sözde sınıf)","cat":"CSS"},{"q":"Laravel projesinde tüm önbelleği (cache) temizlemek için en sık kullanılan komutlardan biri hangisidir?","a":"php artisan optimize:clear","cat":"Laravel"},{"q":"Blade şablonlarında bir `@section` bloğunu kapatmak için hangi direktif kullanılır?","a":"@endsection","cat":"Laravel"},{"q":"HTML'de 'checkbox' ve 'radio' input türleri arasındaki temel kullanım farkı nedir?","a":"Checkbox çoklu seçime, radio ise aynı isimli gruptan tekli seçime izin verir.","cat":"HTML"},{"q":"Laravel'de 'app/Http/Controllers/Controller.php' dosyası ne işe yarar?","a":"Uygulamadaki tüm controller'ların türediği temel (base) controller sınıfıdır.","cat":"Laravel"},{"q":"CSS Flexbox'ta elemanların sıralanma yönünü (satır veya sütun) değiştiren özellik hangisidir?","a":"flex-direction","cat":"CSS"},{"q":"Laravel Blade'de yorum satırı oluşturmak için kullanılan semboller nelerdir?","a":"{{-- yorum --}}","cat":"Laravel"},{"q":"HTML'de bir metni vurgulu (italik gibi) göstermek için kullanılan anlamsal etiket hangisidir?","a":"<em> etiketi.","cat":"HTML"},{"q":"Laravel'de Composer paketlerini yüklemek ve güncellemek için kullanılan dosya hangisidir?","a":"composer.json","cat":"Laravel"},{"q":"CSS'de '!important' kuralı ne amaçla kullanılır?","a":"Belirtilen stilin diğer tüm çakışan kuralları geçersiz kılarak uygulanmasını zorunlu tutar.","cat":"CSS"},{"q":"Laravel'de bir form gönderildiğinde veritabanına kayıt yapmak için genellikle hangi HTTP metodu kullanılır?","a":"POST","cat":"Laravel"},{"q":"Blade'de `@foreach` döngüsü içerisinde o anki döngü sırasını veya durumunu takip etmeyi sağlayan nesne hangisidir?","a":"$loop değişkeni.","cat":"Laravel"},{"q":"CSS'de bir elemanı yatayda ve dikeyde tam ortalamak için Flexbox ile hangi üç kural kullanılır?","a":"display: flex; justify-content: center; align-items: center;","cat":"CSS"},{"q":"HTML'de web sayfasının karakter kodlamasını (örneğin UTF-8) belirten etiket hangisidir?","a":"<meta charset=\"UTF-8\">","cat":"HTML"},{"q":"Laravel'de migrasyon dosyaları projenin hangi klasöründe saklanır?","a":"database/migrations/","cat":"Laravel"},{"q":"Blade'de bir koşulun *yanlış* (false) olması durumunda çalışan kontrol direktifi hangisidir?","a":"@unless","cat":"Laravel"},{"q":"Laravel'de bir Controller metodunda kullanıcıyı başka bir URL'e yönlendirmek için hangi fonksiyon kullanılır?","a":"redirect()","cat":"Laravel"},{"q":"CSS'de arka plan resminin ekranı kaplamasını ve bozulmamasını sağlayan 'background-size' değeri nedir?","a":"cover","cat":"CSS"},{"q":"HTML'de favicon tanımlamak için kullanılan `<link>` etiketinin 'rel' değeri ne olmalıdır?","a":"icon veya shortcut icon","cat":"HTML"},{"q":"Laravel'de 'Model' dosyaları varsayılan olarak hangi klasör altında bulunur?","a":"app/Models/","cat":"Laravel"},{"q":"Blade'de `@yield` ile tanımlanan bir alanın, eğer alt sayfada tanımlanmamışsa gösterilecek varsayılan değeri nasıl verilir?","a":"@yield('alan_adi', 'Varsayılan İçerik')","cat":"Laravel"},{"q":"CSS'de bir elemanın kenarlarını yuvarlatmak için kullanılan özellik hangisidir?","a":"border-radius","cat":"CSS"},{"q":"Laravel'de 'View' dosyaları projenin hangi ana klasörü altında saklanır?","a":"resources/views/","cat":"Laravel"},{"q":"HTML'de sayfa içinde belirli bir bölüme gitmeyi sağlayan (çapa/anchor) link nasıl tanımlanır?","a":"<a href=\"#bolum-id\">","cat":"HTML"},{"q":"CSS Grid'de '1fr' birimi neyi ifade eder?","a":"Kullanılabilir boş alanın bir birimlik (fractional) parçasını.","cat":"CSS"}];
+
+let allCards = CARDS;
+let shuffled = [...allCards];
+let current = 0;
+let correct = 0, wrong = 0;
+let flipped = false;
+let answered = new Set();
+let skipped = new Set();
+let activeCat = 'Tümü';
+
+function catClass(cat) {
+  if (cat === 'HTML') return 'cat-html';
+  if (cat === 'CSS') return 'cat-css';
+  return 'cat-laravel';
+}
+
+// Build table
+function buildTable(data) {
+  const tbody = document.getElementById('qTableBody');
+  tbody.innerHTML = data.map((c, i) => `
+    <tr class="q-row">
+      <td>${i + 1}</td>
+      <td class="cat-cell"><span class="cat-badge ${catClass(c.cat)}">${c.cat}</span></td>
+      <td class="q-question">${escHtml(c.q)}</td>
+      <td>${escHtml(c.a)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('qCount').textContent = `${data.length} soru listeleniyor`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = allCards.filter(c =>
+    c.q.toLowerCase().includes(q) || c.a.toLowerCase().includes(q)
+  );
+  buildTable(filtered);
+}
+
+// TABS
+function switchTab(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+// Kategori filtre
+function setCatFilter(cat, el) {
+  activeCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+
+  if (cat === 'Tümü') {
+    shuffled = [...allCards];
+  } else {
+    shuffled = allCards.filter(c => c.cat === cat);
+  }
+  document.getElementById('totalCount').textContent = shuffled.length;
+  correct = 0; wrong = 0; current = 0;
+  answered.clear(); skipped.clear();
+  document.getElementById('correctCount').textContent = 0;
+  document.getElementById('wrongCount').textContent = 0;
+  loadCard(0);
+}
+
+// GAME
+function loadCard(idx) {
+  if (shuffled.length === 0) return;
+  const card = shuffled[idx];
+  flipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('questionText').textContent = card.q;
+  document.getElementById('answerText').textContent = card.a;
+  document.getElementById('cardCat').textContent = card.cat;
+  document.getElementById('cardCat2').textContent = card.cat;
+  document.getElementById('cardNum').textContent = `${idx+1}/${shuffled.length}`;
+  document.getElementById('cardNum2').textContent = `${idx+1}/${shuffled.length}`;
+  document.getElementById('progressText').textContent = `Soru ${idx+1} / ${shuffled.length}`;
+  const pct = Math.round(((answered.size + skipped.size) / shuffled.length) * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('correctBtn').disabled = true;
+  document.getElementById('wrongBtn').disabled = true;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === shuffled.length - 1;
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('flashcard').classList.toggle('flipped', flipped);
+  if (flipped && !answered.has(current) && !skipped.has(current)) {
+    document.getElementById('correctBtn').disabled = false;
+    document.getElementById('wrongBtn').disabled = false;
+  }
+}
+
+function markCorrect() {
+  if (answered.has(current)) return;
+  answered.add(current);
+  correct++;
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('correctBtn').disabled = true;
+  document.getElementById('wrongBtn').disabled = true;
+  document.getElementById('flashcard').classList.add('flash-correct');
+  setTimeout(() => document.getElementById('flashcard').classList.remove('flash-correct'), 600);
+  updateProgress();
+  setTimeout(autoNext, 700);
+}
+
+function markWrong() {
+  if (answered.has(current)) return;
+  answered.add(current);
+  wrong++;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('correctBtn').disabled = true;
+  document.getElementById('wrongBtn').disabled = true;
+  document.getElementById('flashcard').classList.add('flash-wrong');
+  setTimeout(() => document.getElementById('flashcard').classList.remove('flash-wrong'), 600);
+  updateProgress();
+  setTimeout(autoNext, 700);
+}
+
+function skipCard() {
+  if (!answered.has(current)) skipped.add(current);
+  updateProgress();
+  autoNext();
+}
+
+function autoNext() {
+  if (answered.size + skipped.size >= shuffled.length) {
+    showResult(); return;
+  }
+  let next = current + 1;
+  while (next < shuffled.length && (answered.has(next) || skipped.has(next))) next++;
+  if (next < shuffled.length) {
+    current = next; loadCard(current);
+  } else {
+    next = 0;
+    while (next < shuffled.length && (answered.has(next) || skipped.has(next))) next++;
+    if (next < shuffled.length) { current = next; loadCard(current); }
+    else showResult();
+  }
+}
+
+function nextCard() {
+  if (current < shuffled.length - 1) { current++; loadCard(current); }
+}
+function prevCard() {
+  if (current > 0) { current--; loadCard(current); }
+}
+
+function updateProgress() {
+  const done = answered.size + skipped.size;
+  const pct = Math.round((done / shuffled.length) * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `Soru ${current+1} / ${shuffled.length}`;
+}
+
+function shuffleCards() {
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  correct = 0; wrong = 0; current = 0;
+  answered.clear(); skipped.clear();
+  document.getElementById('correctCount').textContent = 0;
+  document.getElementById('wrongCount').textContent = 0;
+  loadCard(0);
+}
+
+function showResult() {
+  document.getElementById('gameArea').style.display = 'none';
+  const rs = document.getElementById('resultScreen');
+  rs.classList.add('show');
+  const total = answered.size;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  document.getElementById('resultScore').textContent = `${correct}/${total}`;
+  document.getElementById('resultDetail').textContent =
+    `${total} soruya cevap verdin — ${skipped.size} soru atlandı. Başarı oranı: %${pct}`;
+  if (pct >= 80) {
+    document.getElementById('resultEmoji').textContent = '🏆';
+    document.getElementById('resultTitle').textContent = 'Mükemmel!';
+  } else if (pct >= 50) {
+    document.getElementById('resultEmoji').textContent = '👍';
+    document.getElementById('resultTitle').textContent = 'İyi İş!';
+  } else {
+    document.getElementById('resultEmoji').textContent = '📚';
+    document.getElementById('resultTitle').textContent = 'Biraz daha çalış!';
+  }
+}
+
+function restartGame() {
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('gameArea').style.display = 'block';
+  correct = 0; wrong = 0; current = 0;
+  answered.clear(); skipped.clear();
+  document.getElementById('correctCount').textContent = 0;
+  document.getElementById('wrongCount').textContent = 0;
+  loadCard(0);
+}
+
+// Init
+buildTable(allCards);
+loadCard(0);
+</script>
+</body>
+</html>
